@@ -24,34 +24,32 @@
 package com.xteascala
 
 object Test extends App {
-  val testStart = System.nanoTime
+  val testStart = System.currentTimeMillis
+  val random = new java.security.SecureRandom
   (1 to 10000).foreach(i => {
-    println(s"$i.")
     // 1. Generate some random bytes
-    val random = new java.security.SecureRandom
-    val bytes = new Array[Byte](16)
-    random.nextBytes(bytes)
+    val keyBytes = "0123456789abcdef".getBytes
 
     // 2. Get the key to process
-    val key = XTEA.key(bytes)
+    val key = XTEA.key(keyBytes)
 
     // 3. Get the IV
     val iv = new Array[Byte](8)
     random.nextBytes(iv)
 
     // 4. Encrypt some string
-    val s1 = System.nanoTime
+    //    val s1 = System.nanoTime
     val toEncrypt = "Hello! Olá! úóíûàç す文字列"
     val encrypted = XTEA.encryptCBC(toEncrypt.getBytes("UTF-8"), iv, key)
-    println(s"Encryption took ${(System.nanoTime - s1) / 1e6}ms")
+    //    println(s"Encryption took ${(System.nanoTime - s1) / 1e6}ms")
 
     // 5. Decrypt the encrypted data
-    val s2 = System.nanoTime
+    //    val s2 = System.nanoTime
     val decrypted = XTEA.decryptCBC(encrypted, iv, key)
-    println(s"Decryption took ${(System.nanoTime - s2) / 1e6}ms\n\n")
+    //    println(s"Decryption took ${(System.nanoTime - s2) / 1e6}ms\n\n")
 
     // 6. Compare the pre-encrypted string and decrypted string
     assert(toEncrypt == XTEA.toString(decrypted))
   })
-  println(s"Test took ${(System.nanoTime - testStart) / 1e6}ms")
+  println(s"Test took ${System.currentTimeMillis - testStart}ms to generate IV, encrypt and decrypt 10.000 small messages")
 }

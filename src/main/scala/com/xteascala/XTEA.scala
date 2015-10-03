@@ -33,9 +33,9 @@ object XTEA {
     * @return A sequence of Int's to be used in encryption/decryption as key
     */
   def key(bytes: Array[Byte], rounds: Int = 64): Seq[Int] = {
-    if (bytes.length != 16) {
+    if (bytes.length != 16)
       throw new RuntimeException("The key must be 128-bit long")
-    }
+
     val key = for (i <- 0 to 3) yield Seq((bytes(i * 4) & 0xFF) << 24, (bytes(i * 4 + 1) & 0xFF) << 16, (bytes(i * 4 + 2) & 0xFF) << 8, bytes(i * 4 + 3) & 0xFF).sum
     for (i <- 0 until rounds) yield if (i % 2 == 0) DELTA * (i / 2) + key(DELTA * (i / 2) & 3) else (DELTA * (i / 2) + DELTA) + key(((DELTA * (i / 2) + DELTA) >>> 11) & 3)
   }
@@ -49,9 +49,8 @@ object XTEA {
     * @return Encrypted byte array
     */
   def encryptCBC(data: Array[Byte], iv: Array[Byte], key: Seq[Int], rounds: Int = 64): Array[Byte] = {
-    if (iv.length != 8) {
+    if (iv.length != 8)
       throw new RuntimeException("The initialization vector must be 64-bit long")
-    }
 
     val blocks: Seq[Array[Byte]] = for (i <- data.indices by 8) yield {
       if (i + 8 < data.length)
@@ -76,12 +75,10 @@ object XTEA {
     * @return Decrypted byte array
     */
   def decryptCBC(data: Array[Byte], iv: Array[Byte], key: Seq[Int], rounds: Int = 64): Array[Byte] = {
-    if (iv.length != 8) {
+    if (iv.length != 8)
       throw new RuntimeException("The initialization vector must be 64-bit long")
-    }
-    if (data.length % 8 != 0) {
+    if (data.length % 8 != 0)
       throw new RuntimeException("The data is not a CBC ciphered block")
-    }
 
     val blocks: Seq[Array[Byte]] = for (i <- data.indices by 8) yield data.slice(i, i + 8)
     blocks.foldLeft((iv, Array[Byte]()))((lastBlock, block) => {
@@ -137,7 +134,5 @@ object XTEA {
     * @param charset Charset
     * @return String from decrypted byte array
     */
-  def toString(data: Array[Byte], charset: String = "UTF-8"): String = {
-    new String(data.reverse.dropWhile(_ == 0x00).reverse, charset)
-  }
+  def toString(data: Array[Byte], charset: String = "UTF-8"): String = new String(data.reverse.dropWhile(_ == 0x00).reverse, charset)
 }

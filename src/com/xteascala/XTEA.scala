@@ -23,8 +23,6 @@
 
 package com.xteascala
 
-import scala.collection.mutable.ListBuffer
-
 object XTEA {
   private val DELTA = 0x9E3779B9
 
@@ -61,16 +59,13 @@ object XTEA {
       else
         data.drop(i) ++ (for (i <- 0 to (7 - (data.length % 8))) yield 0x00.toByte)
     }
-    val returnArray = new ListBuffer[Array[Byte]]
-    blocks.foldLeft(iv)((lastBlock, block) => {
+    blocks.foldLeft((iv, Array[Byte]()))((lastBlock, block) => {
       val XORedBlock = (for (i <- 0 until 8) yield {
-        (block(i) ^ lastBlock(i)).toByte
+        (block(i) ^ lastBlock._1(i)).toByte
       }).toArray
       val encrypted = encryptBlock(XORedBlock, key, rounds)
-      returnArray += encrypted
-      encrypted
-    })
-    returnArray.foldLeft(Array[Byte]())(_ ++ _)
+      (encrypted, lastBlock._2 ++ encrypted)
+    })._2
   }
 
   /** CBC block decipher mode
@@ -89,17 +84,13 @@ object XTEA {
     }
 
     val blocks: Seq[Array[Byte]] = for (i <- data.indices by 8) yield data.slice(i, i + 8)
-
-    val returnBlocks = new ListBuffer[Array[Byte]]
-    blocks.foldLeft(iv)((lastBlock, block) => {
+    blocks.foldLeft((iv, Array[Byte]()))((lastBlock, block) => {
       val decryptedBlock = decryptBlock(block, key, rounds)
       val XORedBlock = (for (i <- 0 until 8) yield {
-        (decryptedBlock(i) ^ lastBlock(i)).toByte
+        (decryptedBlock(i) ^ lastBlock._1(i)).toByte
       }).toArray
-      returnBlocks += XORedBlock
-      block
-    })
-    returnBlocks.foldLeft(Array[Byte]())(_ ++ _)
+      (block, lastBlock._2 ++ XORedBlock)
+    })._2
   }
 
   /** Encrypt 64-bit block

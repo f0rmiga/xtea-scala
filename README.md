@@ -1,5 +1,5 @@
 # XTEA for Scala
-Implementation in Scala language of XTEA and CBC block cipher mode of operation.
+Implementation in Scala language of XTEA block cipher crypto algorithm and CBC block cipher mode of operation.
 
 ## Usage
 ```scala
@@ -16,6 +16,9 @@ assert(message == XTEA.toString(decrypted)) // Compare not encrypted string to d
 
 ## Documentation
 Look at the source code, it is well documented.
+
+## Dependencies
+No dependencies.
 
 ## License
 MIT License.

@@ -110,13 +110,15 @@ object XTEA {
     * @return 64-bit encrypted block
     */
   def encryptBlock(block: Array[Byte], key: Seq[Int], rounds: Int): Array[Byte] = {
-    var v0: Int = (block(0) << 24) | ((block(1) & 255) << 16) | ((block(2) & 255) << 8) | (block(3) & 255)
-    var v1: Int = (block(4) << 24) | ((block(5) & 255) << 16) | ((block(6) & 255) << 8) | (block(7) & 255)
-    for (i <- 0 until (rounds / 2)) {
-      v0 += (((v1 << 4) ^ (v1 >>> 5)) + v1) ^ key(i * 2)
-      v1 += (((v0 >>> 5) ^ (v0 << 4)) + v0) ^ key(i * 2 + 1)
+    val v0 = (block(0) << 24) | ((block(1) & 255) << 16) | ((block(2) & 255) << 8) | (block(3) & 255)
+    val v1 = (block(4) << 24) | ((block(5) & 255) << 16) | ((block(6) & 255) << 8) | (block(7) & 255)
+    val v = (0 until (rounds / 2)).foldLeft(v0, v1) {
+      (last, i) =>
+        val v0 = last._1 + ((((last._2 << 4) ^ (last._2 >>> 5)) + last._2) ^ key(i * 2))
+        val v1 = last._2 + ((((v0 >>> 5) ^ (v0 << 4)) + v0) ^ key(i * 2 + 1))
+        (v0, v1)
     }
-    Array[Byte]((v0 >> 24).toByte, (v0 >> 16).toByte, (v0 >> 8).toByte, v0.toByte, (v1 >> 24).toByte, (v1 >> 16).toByte, (v1 >> 8).toByte, v1.toByte)
+    Array[Byte]((v._1 >> 24).toByte, (v._1 >> 16).toByte, (v._1 >> 8).toByte, v._1.toByte, (v._2 >> 24).toByte, (v._2 >> 16).toByte, (v._2 >> 8).toByte, v._2.toByte)
   }
 
   /** Decrypt 64-bit block
@@ -127,13 +129,15 @@ object XTEA {
     * @return 64-bit decrypted block
     */
   def decryptBlock(block: Array[Byte], key: Seq[Int], rounds: Int): Array[Byte] = {
-    var v0: Int = (block(0) << 24) | ((block(1) & 255) << 16) | ((block(2) & 255) << 8) | (block(3) & 255)
-    var v1: Int = (block(4) << 24) | ((block(5) & 255) << 16) | ((block(6) & 255) << 8) | (block(7) & 255)
-    for (i <- ((rounds / 2) - 1) to 0 by -1) {
-      v1 -= (((v0 >>> 5) ^ (v0 << 4)) + v0) ^ key(i * 2 + 1)
-      v0 -= (((v1 << 4) ^ (v1 >>> 5)) + v1) ^ key(i * 2)
+    val v1 = (block(4) << 24) | ((block(5) & 255) << 16) | ((block(6) & 255) << 8) | (block(7) & 255)
+    val v0 = (block(0) << 24) | ((block(1) & 255) << 16) | ((block(2) & 255) << 8) | (block(3) & 255)
+    val v = (((rounds / 2) - 1) to 0 by -1).foldLeft(v1, v0) {
+      (last, i) =>
+        val v1 = last._1 - ((((last._2 >>> 5) ^ (last._2 << 4)) + last._2) ^ key(i * 2 + 1))
+        val v0 = last._2 - ((((v1 << 4) ^ (v1 >>> 5)) + v1) ^ key(i * 2))
+        (v1, v0)
     }
-    Array[Byte]((v0 >> 24).toByte, (v0 >> 16).toByte, (v0 >> 8).toByte, v0.toByte, (v1 >> 24).toByte, (v1 >> 16).toByte, (v1 >> 8).toByte, v1.toByte)
+    Array[Byte]((v._2 >> 24).toByte, (v._2 >> 16).toByte, (v._2 >> 8).toByte, v._2.toByte, (v._1 >> 24).toByte, (v._1 >> 16).toByte, (v._1 >> 8).toByte, v._1.toByte)
   }
 
   /** Extracts string from byte array and drop out null characters from end

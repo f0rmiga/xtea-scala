@@ -24,6 +24,7 @@
 package com.xteascala
 
 object Test extends App {
+  val testStart = System.nanoTime
   (1 to 10000).foreach(i => {
     println(s"$i.")
     // 1. Generate some random bytes
@@ -52,4 +53,5 @@ object Test extends App {
     // 6. Compare the pre-encrypted string and decrypted string
     assert(toEncrypt == XTEA.toString(decrypted))
   })
+  println(s"Test took ${(System.nanoTime - testStart) / 1e6}ms")
 }

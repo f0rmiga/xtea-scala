@@ -1,6 +1,9 @@
 # XTEA for Scala
 Implementation in Scala language of XTEA block cipher crypto algorithm and CBC block cipher mode of operation.
 
+## Status
+The encryptBlock and decryptBlock are ready, but CBC not.
+
 ## Usage
 ```scala
 val someBytes: Array[Byte] = "0123456789abcdef".getBytes // 128-bit long
